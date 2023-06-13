@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="DataflowGraph" load_steps=5 format=3 uid="uid://dt5plyiv6uxv3"]
+
+[ext_resource type="Script" path="res://addons/dataflow_engine/DataflowFunction.gd" id="1_3uipw"]
+[ext_resource type="Script" path="res://addons/dataflow_engine/DataflowGraph.gd" id="1_ngi12"]
+[ext_resource type="Script" path="res://addons/dataflow_engine/DataflowNode.gd" id="2_xn8s4"]
+
+[sub_resource type="Resource" id="Resource_e31uf"]
+script = ExtResource("1_3uipw")
+input_count = 3
+input_0/name = "1"
+input_0/type = 28
+input_0/element_type/type = 0
+input_1/name = "2"
+input_1/type = 28
+input_1/element_type/type = 0
+input_2/name = "2"
+input_2/type = 28
+input_2/element_type/type = 0
+
+[resource]
+script = ExtResource("1_ngi12")
+node_count = 2
+node_0/script = ExtResource("2_xn8s4")
+node_0/function = SubResource("Resource_e31uf")
+node_0/visuals/title = ""
+node_0/visuals/position = Vector2(0, 0)
+node_1/script = ExtResource("2_xn8s4")
+node_1/visuals/title = ""
+node_1/visuals/position = Vector2(0, 0)
