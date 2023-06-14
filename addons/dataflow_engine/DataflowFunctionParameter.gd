@@ -19,7 +19,6 @@ func _get_property_list() -> Array[Dictionary]:
 	return properties
 
 func _set(property: StringName, value: Variant):
-	print("[DataflowFunctionParameter._set] %s" % property)
 	match property:
 		"name":
 			name = value

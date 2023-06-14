@@ -2,53 +2,48 @@
 class_name DataflowFunction extends Resource
 
 const DataflowFunctionParameter = preload("DataflowFunctionParameter.gd")
+const ObjectHelper = preload("ObjectHelper.gd")
 
-var _object_helper := preload("ObjectHelper.gd").new()
+var _object_helper := ObjectHelper.new()
 
 var _inputs: Array[DataflowFunctionParameter] = []
 var _outputs: Array[DataflowFunctionParameter] = []
 
+var _inputs_array_property_preset := ObjectHelper.ArrayPropertyPreset.new("input",
+		func (): return DataflowFunctionParameter.new(),
+		func (): changed.emit(); property_list_changed.emit())
+var _outputs_array_property_preset := ObjectHelper.ArrayPropertyPreset.new("output",
+		func (): return DataflowFunctionParameter.new(),
+		func (): changed.emit(); property_list_changed.emit())
+
 func _init():
 	_object_helper.add_signal_to_connect("changed", func (): changed.emit())
 	_object_helper.add_signal_to_connect("property_list_changed", func (): property_list_changed.emit())
-	pass
 	
 func _get_property_list() -> Array[Dictionary]:
 	var properties: Array[Dictionary] = []
-	properties.append({
-		"name": "input_count",
-		"class_name": "Inputs,input_,add_button_text=Add Input,page_size=10",
-		"type": TYPE_INT,
-		"usage": PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": ""
-	})
-	for i in _inputs.size():
-		_inputs[i] = _object_helper.create_and_connect_if_necessary(_inputs[i], func (): return DataflowFunctionParameter.new())
-		properties.append_array(_object_helper.get_child_property_list(_inputs[i], "input_%s/" % i))
+	properties.append_array(_object_helper.get_array_property_list(_inputs, _inputs_array_property_preset))
+	properties.append_array(_object_helper.get_array_property_list(_outputs, _outputs_array_property_preset))
 	return properties
 
 func _set(property: StringName, value: Variant):
-	print("[DataflowFunction._set] %s = %s" % [property, value])
-	if property == "input_count":
-		if value != _inputs.size():
-			_inputs.resize(value)
-			property_list_changed.emit()
-	elif property.begins_with("input_"):
-		var slash_pos = property.find("/")
-		var i := property.substr(0, slash_pos).get_slice("_", 1).to_int()
-		_inputs[i] = _object_helper.create_and_connect_if_necessary(_inputs[i], func (): return DataflowFunctionParameter.new())
-		_inputs[i].set(property.substr(slash_pos + 1), value)
+	if _object_helper.is_array_property(property, _inputs_array_property_preset):
+		_object_helper.set_array_property(property, value, _inputs, _inputs_array_property_preset)
+	elif _object_helper.is_array_property(property, _outputs_array_property_preset):
+		_object_helper.set_array_property(property, value, _outputs, _outputs_array_property_preset)
 
 func _get(property: StringName) -> Variant:
-	if property == "input_count":
-		return _inputs.size()
-	elif property.begins_with("input_"):
-		var slash_pos = property.find("/")
-		var i := property.substr(0, slash_pos).get_slice("_", 1).to_int()
-		_inputs[i] = _object_helper.create_and_connect_if_necessary(_inputs[i], func (): return DataflowFunctionParameter.new())
-		return _inputs[i].get(property.substr(slash_pos + 1))
+	if _object_helper.is_array_property(property, _inputs_array_property_preset):
+		return _object_helper.get_array_property(property, _inputs, _inputs_array_property_preset)
+	elif _object_helper.is_array_property(property, _outputs_array_property_preset):
+		return _object_helper.get_array_property(property, _outputs, _outputs_array_property_preset)
 	return null
 
 func _emit_property_list_changed():
 	property_list_changed.emit()
+
+func get_inputs() -> Array[DataflowFunctionParameter]:
+	return _inputs.duplicate()
+
+func get_outputs() -> Array[DataflowFunctionParameter]:
+	return _outputs.duplicate()

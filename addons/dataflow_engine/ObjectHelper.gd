@@ -77,3 +77,87 @@ func create_and_connect_if_necessary(object: Object, create_func: Callable) -> O
 		object = create_func.call()
 		connect_to_child(object)
 	return object
+
+
+class ArrayPropertyPreset:
+	
+	var element_name: String
+	var element_create_function: Callable
+	var elements_changed_function: Callable
+	var element_title: String
+	var array_title: String
+	
+	func _init(element_name: String, element_create_function: Callable, elements_changed_function: Callable, element_title: String = "", array_title: String = ""):
+		self.element_name = element_name
+		self.element_create_function = element_create_function
+		self.elements_changed_function = elements_changed_function
+		self.element_title = element_title
+		self.array_title = array_title
+
+	func get_array_counter_property_name() -> String:
+		return element_name + "_count"
+	
+	func get_element_property_name_prefix() -> String:
+		return element_name + "_"
+	
+	func get_element_property_name(index: int) -> String:
+		return "%s_%s" % [element_name, index]
+	
+	func get_index_from_element_property_name(property_name: String) -> int:
+		return property_name.get_slice("_", 1).to_int()
+	
+	func get_element_title() -> String:
+		if element_title != null and not element_title.is_empty():
+			return element_title
+		else:
+			return element_name.capitalize()
+
+	func get_array_title() -> String:
+		if array_title != null and not array_title.is_empty():
+			return array_title
+		else:
+			return get_element_title() + "s"
+
+func get_array_property_list(array: Array, preset: ArrayPropertyPreset) -> Array[Dictionary]:
+	var properties: Array[Dictionary] = []
+	properties.append({
+		"name": preset.get_array_counter_property_name(),
+		"class_name": "%s,%s,add_button_text=Add %s,page_size=10" % [preset.get_array_title(), preset.get_element_property_name_prefix(), preset.get_element_title()],
+		"type": TYPE_INT,
+		"usage": PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": ""
+	})
+	for i in array.size():
+		array[i] = create_and_connect_if_necessary(array[i], preset.element_create_function)
+		properties.append_array(get_child_property_list(array[i], preset.get_element_property_name(i) + "/"))
+	return properties
+
+func is_array_property(property: StringName, preset: ArrayPropertyPreset, ) -> bool:
+	if property == preset.get_array_counter_property_name():
+		return true
+	elif property.begins_with(preset.get_element_property_name_prefix()):
+		return true
+	return false
+
+func set_array_property(property: StringName, value: Variant, array: Array, preset: ArrayPropertyPreset):
+	if property == preset.get_array_counter_property_name():
+		if value != array.size():
+			array.resize(value)
+			preset.elements_changed_function.call()
+	elif property.begins_with(preset.get_element_property_name_prefix()):
+		var slash_pos = property.find("/")
+		var i := preset.get_index_from_element_property_name(property.substr(0, slash_pos))
+		array[i] = create_and_connect_if_necessary(array[i], preset.element_create_function)
+		array[i].set(property.substr(slash_pos + 1), value)
+
+func get_array_property(property: StringName, array: Array, preset: ArrayPropertyPreset) -> Variant:
+	if property == preset.get_array_counter_property_name():
+		return array.size()
+	elif property.begins_with(preset.get_element_property_name_prefix()):
+		var slash_pos = property.find("/")
+		var i := preset.get_index_from_element_property_name(property.substr(0, slash_pos))
+		array[i] = create_and_connect_if_necessary(array[i], preset.element_create_function)
+		return array[i].get(property.substr(slash_pos + 1))
+	return null
+

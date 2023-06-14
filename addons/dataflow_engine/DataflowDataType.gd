@@ -143,7 +143,6 @@ func _get_property_list() -> Array[Dictionary]:
 
 
 func _set(property: StringName, value: Variant):
-	print("[DataflowDataType._set] %s = %s" % [property, value])
 	if property == "type":
 		type = value
 	elif property == "class":
