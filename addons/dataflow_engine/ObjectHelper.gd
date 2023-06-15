@@ -103,6 +103,10 @@ class ArrayPropertyPreset:
 	func get_element_property_name(index: int) -> String:
 		return "%s_%s" % [element_name, index]
 	
+	func property_name_matches(property_name: String) -> bool:
+		var parts := property_name.split("_")
+		return parts[0] == element_name and parts[1].is_valid_int()
+	
 	func get_index_from_element_property_name(property_name: String) -> int:
 		return property_name.get_slice("_", 1).to_int()
 	

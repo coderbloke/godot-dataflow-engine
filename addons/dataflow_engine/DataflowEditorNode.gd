@@ -24,7 +24,7 @@ var dataflow_function: DataflowFunction:
 
 func _init(dataflow_node: DataflowGraph.DataflowNode):
 	self.dataflow_node = dataflow_node
-	custom_minimum_size = Vector2(120, 60)
+	custom_minimum_size = Vector2(120, 0)
 	var stylebox := StyleBoxEmpty.new()
 	stylebox.content_margin_left = 8
 	stylebox.content_margin_right = 8
@@ -53,11 +53,10 @@ func _create_slot_label() -> RichTextLabel:
 	return label
 
 func _sync_with_dataflow_function():
-	print("[_sync_with_dataflow_function]")
 	var inputs := dataflow_function.get_inputs()
 	var outputs := dataflow_function.get_outputs()
 	var previous_slot_count := slot_containers.size()
-	var slot_count := max(inputs.size(), outputs.size())
+	var slot_count := max(inputs.size(), outputs.size(), 1)
 	for previous_slot_index in slot_containers.size():
 		if previous_slot_index >= slot_count:
 			remove_child(slot_containers[previous_slot_index])
@@ -81,8 +80,8 @@ func _sync_with_dataflow_function():
 			slot_index < outputs.size(), 0, connector_color,
 			left_connector_icon, right_connector_icon
 		)
-		left_label.text = inputs[slot_index].name if slot_index < inputs.size() and not inputs[slot_index].name.is_empty() else " "
-		right_label.text = "[right]" + outputs[slot_index].name + "[/right]" if slot_index < outputs.size() and not outputs[slot_index].name.is_empty() else " "
+		left_label.text = inputs[slot_index].get_display_name() if slot_index < inputs.size() and not inputs[slot_index].get_display_name().is_empty() else " "
+		right_label.text = "[right]" + outputs[slot_index].get_display_name() + "[/right]" if slot_index < outputs.size() and not outputs[slot_index].get_display_name().is_empty() else " "
 
 func _on_editor_node_dragged(from: Vector2, to: Vector2):
 	dataflow_node.position = to

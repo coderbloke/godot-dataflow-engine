@@ -1,6 +1,8 @@
 @tool
 extends EditorPlugin
 
+var inspector_plugin := preload("DataflowInspectorPlugin.gd").new()
+
 var dataflow_editor: Node
 
 func _enter_tree():
@@ -9,12 +11,14 @@ func _enter_tree():
 #	var main_screen := get_editor_interface().get_editor_main_screen()
 #	main_screen.add_child(dataflow_editor)
 	add_control_to_bottom_panel(dataflow_editor, "Dataflow Editor")
+	add_inspector_plugin(inspector_plugin)
 
 
 func _exit_tree():
 #	get_editor_interface().get_editor_main_screen().remove_child(dataflow_editor)
 	remove_control_from_bottom_panel(dataflow_editor)
 	dataflow_editor.queue_free()
+	remove_inspector_plugin(inspector_plugin)
 
 
 func _has_main_screen():
