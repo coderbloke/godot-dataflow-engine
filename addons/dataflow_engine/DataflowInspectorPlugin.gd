@@ -10,6 +10,7 @@ class PropertyLineEdit extends EditorProperty:
 	
 	var line_edit: LineEdit
 	var _updating := false
+	var update_only_on_exit_focus = true
 	
 	func _init(update_trigger: Signal, placeholder_getter: Callable, text_getter: Callable, property_setter: Callable):
 		self.update_trigger = update_trigger
@@ -20,6 +21,7 @@ class PropertyLineEdit extends EditorProperty:
 		update_line_edit()
 		update_trigger.connect(update_line_edit)
 		line_edit.text_changed.connect(_on_text_changed)
+		line_edit.focus_exited.connect(update_line_edit)
 		add_child(line_edit)
 	
 	func _notification(what):
@@ -27,9 +29,18 @@ class PropertyLineEdit extends EditorProperty:
 			update_trigger.disconnect(update_line_edit)
 
 	func update_line_edit():
-		if not _updating:
-			line_edit.placeholder_text = placeholder_getter.call()
-			line_edit.text = text_getter.call()
+		if update_only_on_exit_focus and line_edit.has_focus():
+			return
+		var placeholder_text = placeholder_getter.call()
+		if placeholder_text != line_edit.placeholder_text:
+			line_edit.placeholder_text = placeholder_text
+		var text = text_getter.call()
+		if text != line_edit.text:
+			line_edit.text = text
+			line_edit.caret_column = text.length()
+#		if not _updating:
+#			line_edit.placeholder_text = placeholder_getter.call()
+#			line_edit.text = text_getter.call()
 
 	func _on_text_changed(text: String):
 		_updating = true

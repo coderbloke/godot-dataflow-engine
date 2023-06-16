@@ -6,20 +6,79 @@ const ObjectHelper = preload("ObjectHelper.gd")
 
 var _object_helper := ObjectHelper.new()
 
-var _inputs: Array[DataflowFunctionParameter] = []
-var _outputs: Array[DataflowFunctionParameter] = []
+var _inputs: Array[DataflowFunctionParameter] = []:
+	set(new_value):
+		_inputs = new_value
+		_update_input_parameter_identifiers(null)
+var _outputs: Array[DataflowFunctionParameter] = []:
+	set(new_value):
+		_outputs = new_value
+		_update_output_parameter_identifiers(null)
 
 var _inputs_array_property_preset := ObjectHelper.ArrayPropertyPreset.new("input",
-		func (): return DataflowFunctionParameter.new(),
-		func (): changed.emit(); property_list_changed.emit())
+		func (): 
+			return DataflowFunctionParameter.new(),
+		func (): 
+			_update_input_parameter_identifiers(null)
+			changed.emit() 
+			property_list_changed.emit())
 var _outputs_array_property_preset := ObjectHelper.ArrayPropertyPreset.new("output",
-		func (): return DataflowFunctionParameter.new(),
-		func (): changed.emit(); property_list_changed.emit())
+		func (): 
+			return DataflowFunctionParameter.new(),
+		func (): 
+			_update_output_parameter_identifiers(null)
+			changed.emit()
+			property_list_changed.emit())
+var _input_identifier_preset := ObjectHelper.ChildIdentifierPreset.new("input",
+		func (child): 
+			return child.get_identifier())
+var _output_identifier_preset := ObjectHelper.ChildIdentifierPreset.new("output",
+		func (child):
+			return child.get_identifier())
 
 func _init():
-	_object_helper.add_signal_to_connect("changed", func (): changed.emit())
-	_object_helper.add_signal_to_connect("property_list_changed", func (): property_list_changed.emit())
+	_object_helper.add_signal_to_connect("changed",
+		func (): 
+			if not _updating_children:
+				changed.emit())
+	_object_helper.add_signal_to_connect("identifier_changed",
+		func (parameter: DataflowFunctionParameter): 
+			if not _updating_children:
+				_update_parameter_identifiers(parameter)
+				changed.emit())
+	_object_helper.add_signal_to_connect("property_list_changed",
+		func (): 
+			property_list_changed.emit())
+
+var _updating_children := false
+
+func _update_parameter_identifiers(triggering_parameter: DataflowFunctionParameter):
+	if triggering_parameter in _inputs:
+		_update_input_parameter_identifiers(triggering_parameter)
+	elif triggering_parameter in _outputs:
+		_update_output_parameter_identifiers(triggering_parameter)
+
+func _update_input_parameter_identifiers(triggering_parameter: DataflowFunctionParameter):
+	var new_id_per_child = _object_helper.generate_child_identifiers(_inputs, _input_identifier_preset, triggering_parameter)
+	_set_new_parameter_identifiers(new_id_per_child)
 	
+func _update_output_parameter_identifiers(triggering_parameter: DataflowFunctionParameter):
+	var new_id_per_child = _object_helper.generate_child_identifiers(_outputs, _output_identifier_preset, triggering_parameter)
+	_set_new_parameter_identifiers(new_id_per_child)
+	
+func _set_new_parameter_identifiers(new_id_per_child: Dictionary):
+	_updating_children = true
+	for child in new_id_per_child:
+		if child.identifier.is_empty():
+			child.generated_identifier = new_id_per_child[child]
+		else:
+			child.identifier = new_id_per_child[child]
+	_updating_children = false
+
+func _on_input_array_changed():
+	changed.emit();
+	property_list_changed.emit()
+
 func _get_property_list() -> Array[Dictionary]:
 	var properties: Array[Dictionary] = []
 	properties.append_array(_object_helper.get_array_property_list(_inputs, _inputs_array_property_preset))

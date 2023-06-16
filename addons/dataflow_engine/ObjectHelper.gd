@@ -147,7 +147,11 @@ func is_array_property(property: StringName, preset: ArrayPropertyPreset, ) -> b
 func set_array_property(property: StringName, value: Variant, array: Array, preset: ArrayPropertyPreset):
 	if property == preset.get_array_counter_property_name():
 		if value != array.size():
+			var  previous_size := array.size()
 			array.resize(value)
+			for i in array.size():
+				if i >= previous_size:
+					array[i] = create_and_connect_if_necessary(array[i], preset.element_create_function)
 			preset.elements_changed_function.call()
 	elif property.begins_with(preset.get_element_property_name_prefix()):
 		var slash_pos = property.find("/")
@@ -176,3 +180,137 @@ static func generate_display_name(identififer: String) -> String:
 static func generate_identifier(display_name: String) -> String:
 	return display_name.to_snake_case()
 
+static func to_suitable_id(identifier: String) -> String:
+	var suitable_id = ""
+	for c in identifier:
+		if c == "_" or (c >= "0" and c <= "9") or (c >= "a" and c <= "z") or (c >= 'A' and c <= "Z"):
+			suitable_id += c
+	return suitable_id
+
+class ChildIdentifierPreset:
+	
+	var default_identifier_base: String
+	var getter: Callable
+	
+	func _init(default_identifier_base: String, getter: Callable):
+		self.default_identifier_base = default_identifier_base
+		self.getter = getter
+
+static func generate_child_identifiers(children: Array, preset: ChildIdentifierPreset, triggering_child: Object = null) -> Dictionary:
+#	var log = DebugInfo.get_log("Object Helper") # DEBUG
+#	log.clear() # DEBUG
+	
+	var children_per_id_base = { } # String -> Object
+	var id_base_per_child = { } # Object -> String
+	var id_index_per_child = { } # Object -> int
+
+	var requested_id_base := ""
+	var requested_id_index := -1
+
+	if triggering_child not in children:
+		children = children.duplicate()
+		children.append(triggering_child)
+		
+	var index_base = 1 # Could be 0 also, but 1 is more human
+
+	for child in children:
+		if child == null:
+			continue
+		var child_id_base := preset.getter.call(child)
+		if child_id_base == null or child_id_base.is_empty():
+			child_id_base = preset.default_identifier_base
+		var child_id_index := -1
+		var last_underscore = child_id_base.rfind("_")
+		if last_underscore >= 0 and child_id_base.substr(last_underscore + 1).is_valid_int():
+			child_id_index = child_id_base.substr(last_underscore).to_int()
+			child_id_base = child_id_base.substr(0, last_underscore)
+		
+		if children_per_id_base.get(child_id_base) == null:
+			children_per_id_base[child_id_base] = []
+		children_per_id_base[child_id_base].append(child)
+			
+#		log.print_colored(Color.DARK_GRAY, "[generate_child_identifiers] base = %s, index = %s (%s)" % [child_id_base, child_id_index, child]) # DEBUG
+		
+		id_base_per_child[child] = child_id_base
+		id_index_per_child[child] = child_id_index
+		
+		if child == triggering_child:
+			requested_id_base = child_id_base
+			requested_id_index = child_id_index
+	
+	# Give new id to the children, if needed
+	var new_id_per_child = { } # Object -> String
+	
+	if children_per_id_base.size() == 0:
+		return new_id_per_child # Nothing to do (e.g.during init, when array is empty or nfilled with nulls yet
+	
+	for id_base in children_per_id_base:
+#		log.print_colored(Color.LIGHT_GREEN, "[generate_child_identifiers] id_base = %s" % [id_base]) # DEBUG
+		# Save a bit of computation, if triggering child does not bother the whole list
+		# (But skipped, as in this case it won't remove unnecessary indices)
+#		if triggering_child != null and id_base != requested_id_base: 
+#			continue
+		
+		# Trigger child, so which took an index the last time, should keep it, and other should get new one
+		# Otherwise everybody can keep it previous index
+		# We also remove duplicates
+		var already_used_id_indices = PackedInt64Array()  # Keep it sorted, to find first unused one
+		print(children_per_id_base)
+		for child in children_per_id_base[id_base]:
+			if child != triggering_child and id_index_per_child[child] == requested_id_index:
+				id_index_per_child[child] = -1
+#				log.print_colored(Color.DARK_GRAY, "id lost as its requested by trigger (looser = %s)" % child)
+			if id_index_per_child[child] >= index_base:
+				if id_index_per_child[child] in already_used_id_indices:
+					id_index_per_child[child] = -1
+#					log.print_colored(Color.DARK_GRAY, "id lost as duplicate (duplicate = %s)" % child)
+				else:
+					already_used_id_indices.append(id_index_per_child[child])
+		already_used_id_indices.sort() # Keep it sorted, to find first unused one
+#		log.print("[generate_child_identifiers] already_used_id_indices = %s" % [already_used_id_indices]) # DEBUG
+		
+		# Get new index for children, if it has no index (did not haveor lost)
+		for child in children_per_id_base[id_base]:
+#			log.print("[generate_child_identifiers] child = %s, index = %s" % [child, id_index_per_child[child]]) # DEBUG
+			# No index needed, if there is only one child in the group
+			if children_per_id_base[id_base].size() < 2:
+				# Needs change, if previously it had index
+				if id_index_per_child[child] >= index_base:
+					new_id_per_child[child] = id_base
+#				log.print("[generate_child_identifiers] no need for index -> new_id_per_child = %s" % [new_id_per_child]) # DEBUG
+				continue
+			
+			# Child has an index, and it has not been removed, so it's ok
+			if id_index_per_child[child] >= index_base:
+#				log.print("[generate_child_identifiers] keeping index -> new_id_per_child = %s" % [new_id_per_child]) # DEBUG
+				continue
+			
+			# If child needs index
+			if id_index_per_child[child] < index_base:
+				# Search for the smallest unused index
+				var last_used_index = index_base - 1
+				var unused_index = -1
+				var insert_position = -1
+				for i in already_used_id_indices.size():
+					if already_used_id_indices[i] > last_used_index + 1:
+						unused_index = last_used_index + 1
+						insert_position = i
+						break
+					last_used_index = already_used_id_indices[i]
+					
+#				log.print("[generate_child_identifiers] unused_index = %s, insert_position = %s" % [unused_index, insert_position]) # DEBUG
+				if unused_index >= index_base:
+					# We found a gap in the list of already used id, so insert a new one
+					already_used_id_indices.insert(insert_position, unused_index)
+				else:
+					# Otherwise simply get the next on
+					unused_index = last_used_index + 1 if last_used_index >= index_base else index_base
+					already_used_id_indices.append(unused_index)
+#				log.print("[generate_child_identifiers] got new index -> already_used_id_indices = %s" % [already_used_id_indices]) # DEBUG
+				# Give it tho the child
+				new_id_per_child[child] = id_base + "_" + str(unused_index)
+#				log.print("[generate_child_identifiers] got new index -> new_id_per_child = %s" % [new_id_per_child]) # DEBUG
+				continue
+	
+	return new_id_per_child
+	

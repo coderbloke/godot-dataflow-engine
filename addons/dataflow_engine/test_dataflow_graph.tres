@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="DataflowGraph" load_steps=6 format=3 uid="uid://dt5plyiv6uxv3"]
+[gd_resource type="Resource" script_class="DataflowGraph" load_steps=7 format=3 uid="uid://dt5plyiv6uxv3"]
 
 [ext_resource type="Script" path="res://addons/dataflow_engine/DataflowGraph.gd" id="1_1wism"]
 [ext_resource type="Script" path="res://addons/dataflow_engine/DataflowFunction.gd" id="1_xyjlp"]
@@ -9,9 +9,13 @@ input_count = 0
 output_count = 2
 output_0/display_name = "Changed files"
 output_0/identifier = ""
+output_0/generated_display_name = "Changed files"
+output_0/generated_identifier = "changed_files"
 output_0/type = 0
 output_1/display_name = ""
 output_1/identifier = "all_files"
+output_1/generated_display_name = "All files"
+output_1/generated_identifier = "output"
 output_1/type = 0
 
 [sub_resource type="Resource" id="Resource_tsak0"]
@@ -19,16 +23,24 @@ script = ExtResource("1_xyjlp")
 input_count = 1
 input_0/display_name = "Files"
 input_0/identifier = ""
+input_0/generated_display_name = "Files"
+input_0/generated_identifier = "files"
 input_0/type = 0
 output_count = 3
 output_0/display_name = "Template"
 output_0/identifier = ""
+output_0/generated_display_name = "Template"
+output_0/generated_identifier = "template"
 output_0/type = 0
 output_1/display_name = "Scripts"
 output_1/identifier = ""
+output_1/generated_display_name = "Scripts"
+output_1/generated_identifier = "scripts"
 output_1/type = 0
 output_2/display_name = "Scenes"
 output_2/identifier = ""
+output_2/generated_display_name = "Scenes"
+output_2/generated_identifier = "scenes"
 output_2/type = 0
 
 [sub_resource type="Resource" id="Resource_rhylr"]
@@ -36,23 +48,59 @@ script = ExtResource("1_xyjlp")
 input_count = 3
 input_0/display_name = "Default"
 input_0/identifier = ""
+input_0/generated_display_name = "Default"
+input_0/generated_identifier = "default"
 input_0/type = 0
 input_1/display_name = "Scripts"
 input_1/identifier = ""
+input_1/generated_display_name = "Scripts"
+input_1/generated_identifier = "scripts"
 input_1/type = 0
 input_2/display_name = "Scenes"
 input_2/identifier = ""
+input_2/generated_display_name = "Scenes"
+input_2/generated_identifier = "scenes"
 input_2/type = 0
+output_count = 0
+
+[sub_resource type="Resource" id="Resource_8gsmh"]
+script = ExtResource("1_xyjlp")
+input_count = 5
+input_0/display_name = ""
+input_0/identifier = "input_2"
+input_0/generated_display_name = "Input 2"
+input_0/generated_identifier = "input_1"
+input_0/type = 0
+input_1/display_name = ""
+input_1/identifier = "input_12"
+input_1/generated_display_name = "Input 12"
+input_1/generated_identifier = "input_1"
+input_1/type = 0
+input_2/display_name = ""
+input_2/identifier = "hell_1"
+input_2/generated_display_name = "Hell 1"
+input_2/generated_identifier = "input_3"
+input_2/type = 0
+input_3/display_name = ""
+input_3/identifier = "hell_2"
+input_3/generated_display_name = "Hell 2"
+input_3/generated_identifier = "input_4"
+input_3/type = 0
+input_4/display_name = ""
+input_4/identifier = "hello"
+input_4/generated_display_name = "Hello"
+input_4/generated_identifier = "input_5"
+input_4/type = 0
 output_count = 0
 
 [resource]
 script = ExtResource("1_1wism")
-node_count = 3
-node_0/display_name = "File system monitor "
+node_count = 4
+node_0/display_name = "File system monitor"
 node_0/identifier = ""
 node_0/function = SubResource("Resource_mpdil")
-node_0/diagram/position = Vector2(-20, 80)
-node_1/display_name = "   File filter"
+node_0/diagram/position = Vector2(0, 80)
+node_1/display_name = "File filter"
 node_1/identifier = ""
 node_1/function = SubResource("Resource_tsak0")
 node_1/diagram/position = Vector2(240, 80)
@@ -60,3 +108,7 @@ node_2/display_name = "Scene tree code generator"
 node_2/identifier = ""
 node_2/function = SubResource("Resource_rhylr")
 node_2/diagram/position = Vector2(480, 80)
+node_3/display_name = ""
+node_3/identifier = ""
+node_3/function = SubResource("Resource_8gsmh")
+node_3/diagram/position = Vector2(0, -140)

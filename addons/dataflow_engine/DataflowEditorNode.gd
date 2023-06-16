@@ -80,8 +80,16 @@ func _sync_with_dataflow_function():
 			slot_index < outputs.size(), 0, connector_color,
 			left_connector_icon, right_connector_icon
 		)
-		left_label.text = inputs[slot_index].get_display_name() if slot_index < inputs.size() and not inputs[slot_index].get_display_name().is_empty() else " "
-		right_label.text = "[right]" + outputs[slot_index].get_display_name() + "[/right]" if slot_index < outputs.size() and not outputs[slot_index].get_display_name().is_empty() else " "
+		left_label.text = inputs[slot_index].get_display_name() \
+				if slot_index < inputs.size() \
+				and inputs[slot_index] != null \
+				and not inputs[slot_index].get_display_name().is_empty() \
+				else " "
+		right_label.text = "[right]" + outputs[slot_index].get_display_name() + "[/right]" \
+				if slot_index < outputs.size() \
+				and outputs[slot_index] != null \
+				and not outputs[slot_index].get_display_name().is_empty() \
+				else " "
 
 func _on_editor_node_dragged(from: Vector2, to: Vector2):
 	dataflow_node.position = to
