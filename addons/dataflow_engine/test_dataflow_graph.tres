@@ -6,43 +6,57 @@
 [sub_resource type="Resource" id="Resource_mpdil"]
 script = ExtResource("1_xyjlp")
 input_count = 0
-output_count = 1
-output_0/name = "Changed files"
+output_count = 2
+output_0/display_name = "Changed files"
+output_0/identifier = ""
 output_0/type = 0
+output_1/display_name = ""
+output_1/identifier = "all_files"
+output_1/type = 0
 
 [sub_resource type="Resource" id="Resource_tsak0"]
 script = ExtResource("1_xyjlp")
 input_count = 1
-input_0/name = "Files"
+input_0/display_name = "Files"
+input_0/identifier = ""
 input_0/type = 0
 output_count = 3
-output_0/name = "Template"
+output_0/display_name = "Template"
+output_0/identifier = ""
 output_0/type = 0
-output_1/name = "Scripts"
+output_1/display_name = "Scripts"
+output_1/identifier = ""
 output_1/type = 0
-output_2/name = "Scenes"
+output_2/display_name = "Scenes"
+output_2/identifier = ""
 output_2/type = 0
 
 [sub_resource type="Resource" id="Resource_rhylr"]
 script = ExtResource("1_xyjlp")
 input_count = 3
-input_0/name = "Default"
+input_0/display_name = "Default"
+input_0/identifier = ""
 input_0/type = 0
-input_1/name = "Scripts"
+input_1/display_name = "Scripts"
+input_1/identifier = ""
 input_1/type = 0
-input_2/name = "Scenes"
+input_2/display_name = "Scenes"
+input_2/identifier = ""
 input_2/type = 0
 output_count = 0
 
 [resource]
 script = ExtResource("1_1wism")
 node_count = 3
+node_0/display_name = "File system monitor "
+node_0/identifier = ""
 node_0/function = SubResource("Resource_mpdil")
-node_0/visuals/title = "File system monitor "
-node_0/visuals/position = Vector2(40, 80)
+node_0/diagram/position = Vector2(-20, 80)
+node_1/display_name = "   File filter"
+node_1/identifier = ""
 node_1/function = SubResource("Resource_tsak0")
-node_1/visuals/title = "   File filter"
-node_1/visuals/position = Vector2(300, 80)
+node_1/diagram/position = Vector2(240, 80)
+node_2/display_name = "Scene tree code generator"
+node_2/identifier = ""
 node_2/function = SubResource("Resource_rhylr")
-node_2/visuals/title = "Scene tree code generator"
-node_2/visuals/position = Vector2(540, 80)
+node_2/diagram/position = Vector2(480, 80)

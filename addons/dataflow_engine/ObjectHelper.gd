@@ -165,3 +165,14 @@ func get_array_property(property: StringName, array: Array, preset: ArrayPropert
 		return array[i].get(property.substr(slash_pos + 1))
 	return null
 
+static func generate_display_name(identififer: String) -> String:
+	if identififer.is_empty():
+		return ""
+	var previous_char_was_space := false
+	var display_name =  identififer.to_snake_case().replace("_", " ")
+	display_name = display_name[0].capitalize() + display_name.substr(1)
+	return display_name
+
+static func generate_identifier(display_name: String) -> String:
+	return display_name.to_snake_case()
+

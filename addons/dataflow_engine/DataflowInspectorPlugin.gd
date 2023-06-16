@@ -37,7 +37,7 @@ class PropertyLineEdit extends EditorProperty:
 		_updating = false
 
 func _can_handle(object: Object):
-	return object is DataflowFunction
+	return object is DataflowFunction or object is DataflowGraph
 
 func _parse_property(object: Object, type: Variant.Type, name: String,
 		hint_type: PropertyHint, hint_string: String,
@@ -67,6 +67,31 @@ func _parse_property(object: Object, type: Variant.Type, name: String,
 					func(): return function_parameter.generated_display_name,
 					func(): return function_parameter.display_name,
 					func(value): function_parameter.display_name = value,
+				)
+				add_property_editor(name, editor_property)
+				return true
+	if object is DataflowGraph:
+		var name_parts = name.split("/")
+		var node: DataflowGraph.DataflowNode = null
+		if name_parts.size() == 2 and object._nodes_array_property_preset.property_name_matches(name_parts[0]):
+			var index = object._nodes_array_property_preset.get_index_from_element_property_name(name_parts[0])
+			node = object._nodes[index]
+		if node != null:
+			if name_parts[1] == "identifier":
+				var editor_property := PropertyLineEdit.new(
+					object.changed,
+					func(): return node.generated_identifier,
+					func(): return node.identifier,
+					func(value): node.identifier = value,
+				)
+				add_property_editor(name, editor_property)
+				return true
+			if name_parts[1] == "display_name":
+				var editor_property := PropertyLineEdit.new(
+					object.changed,
+					func(): return node.generated_display_name,
+					func(): return node.display_name,
+					func(value): node.display_name = value,
 				)
 				add_property_editor(name, editor_property)
 				return true
