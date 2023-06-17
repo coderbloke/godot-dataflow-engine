@@ -42,7 +42,7 @@ func _init():
 			if not _updating_children:
 				changed.emit())
 	_object_helper.add_signal_to_connect("identifier_changed",
-		func (parameter: DataflowFunctionParameter): 
+		func (parameter: DataflowFunctionParameter):
 			if not _updating_children:
 				_update_parameter_identifiers(parameter)
 				changed.emit())
