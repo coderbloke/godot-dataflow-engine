@@ -100,15 +100,33 @@ class ArrayPropertyPreset:
 	func get_element_property_name_prefix() -> String:
 		return element_name + "_"
 	
-	func get_element_property_name(index: int) -> String:
-		return "%s_%s" % [element_name, index]
+	func get_element_property_name(index: int, subproperty: String = "") -> String:
+		return "%s_%s" % [element_name, index] if subproperty.is_empty() else  "%s_%s/%s" % [element_name, index, subproperty]
 	
-	func property_name_matches(property_name: String) -> bool:
-		var parts := property_name.split("_")
-		return parts[0] == element_name and parts[1].is_valid_int()
+	func element_property_name_matches(property_name: String, allow_subproperties: bool = true) -> bool:
+		var prefix := get_element_property_name_prefix()
+		if property_name.begins_with(prefix):
+			property_name = property_name.trim_prefix(prefix)
+			return property_name.get_slice("/", 0).is_valid_int() if allow_subproperties else property_name.is_valid_int()
+		else:
+			return false
 	
-	func get_index_from_element_property_name(property_name: String) -> int:
-		return property_name.get_slice("_", 1).to_int()
+	func get_index_from_element_property_name(property_name: String, allow_subproperties: bool = true) -> int:
+		var prefix := get_element_property_name_prefix()
+		if property_name.begins_with(prefix):
+			property_name = property_name.trim_prefix(prefix)
+			return property_name.get_slice("/", 0).to_int() if allow_subproperties else property_name.to_int()
+		else:
+			return -1
+	
+	func get_subproperty_from_element_property_name(property_name: String) -> String:
+		var prefix := get_element_property_name_prefix()
+		if property_name.begins_with(prefix):
+			property_name = property_name.trim_prefix(prefix)
+			var slash_pos = property_name.find("/")
+			return property_name.substr(slash_pos + 1) if slash_pos >= 0 else ""
+		else:
+			return ""
 	
 	func get_element_title() -> String:
 		if element_title != null and not element_title.is_empty():

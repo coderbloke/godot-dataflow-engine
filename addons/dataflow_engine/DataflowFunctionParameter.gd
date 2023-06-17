@@ -76,14 +76,14 @@ func _get_property_list() -> Array[Dictionary]:
 	properties.append({
 		"name": "generated_display_name",
 		"type": TYPE_STRING,
-		"usage": PROPERTY_USAGE_STORAGE,
+		"usage": PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": ""
 	})
 	properties.append({
 		"name": "generated_identifier",
 		"type": TYPE_STRING,
-		"usage": PROPERTY_USAGE_STORAGE,
+		"usage": PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": ""
 	})

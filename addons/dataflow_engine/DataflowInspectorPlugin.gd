@@ -4,21 +4,16 @@ extends EditorInspectorPlugin
 class PropertyLineEdit extends EditorProperty:
 
 	var update_trigger: Signal
-	var placeholder_getter: Callable
-	var text_getter: Callable
-	var property_setter: Callable
+	var placeholder_property: String
 	
 	var line_edit: LineEdit
 	var _updating := false
 	var update_only_on_exit_focus = true
 	
-	func _init(update_trigger: Signal, placeholder_getter: Callable, text_getter: Callable, property_setter: Callable):
+	func _init(update_trigger: Signal, placeholder_property: String):
 		self.update_trigger = update_trigger
-		self.placeholder_getter = placeholder_getter
-		self.text_getter = text_getter
-		self.property_setter = property_setter
+		self.placeholder_property = placeholder_property
 		line_edit = LineEdit.new()
-		update_line_edit()
 		update_trigger.connect(update_line_edit)
 		line_edit.text_changed.connect(_on_text_changed)
 		line_edit.focus_exited.connect(update_line_edit)
@@ -28,13 +23,17 @@ class PropertyLineEdit extends EditorProperty:
 		if what == NOTIFICATION_PREDELETE:
 			update_trigger.disconnect(update_line_edit)
 
+	func _update_property():
+		print("[_update_property]")
+		update_line_edit()
+
 	func update_line_edit():
 		if update_only_on_exit_focus and line_edit.has_focus():
 			return
-		var placeholder_text = placeholder_getter.call()
+		var placeholder_text = get_edited_object().get(placeholder_property)
 		if placeholder_text != line_edit.placeholder_text:
 			line_edit.placeholder_text = placeholder_text
-		var text = text_getter.call()
+		var text = get_edited_object().get(get_edited_property())
 		if text != line_edit.text:
 			line_edit.text = text
 			line_edit.caret_column = text.length()
@@ -44,7 +43,7 @@ class PropertyLineEdit extends EditorProperty:
 
 	func _on_text_changed(text: String):
 		_updating = true
-		property_setter.call(text)
+		get_edited_object().set(get_edited_property(), text)
 		_updating = false
 
 func _can_handle(object: Object):
@@ -54,55 +53,46 @@ func _parse_property(object: Object, type: Variant.Type, name: String,
 		hint_type: PropertyHint, hint_string: String,
 		usage_flags: PropertyUsageFlags, wide: bool):
 	if object is DataflowFunction:
-		var name_parts = name.split("/")
-		var function_parameter: DataflowFunction.DataflowFunctionParameter = null
-		if name_parts.size() == 2 and object._inputs_array_property_preset.property_name_matches(name_parts[0]):
-			var index = object._inputs_array_property_preset.get_index_from_element_property_name(name_parts[0])
-			function_parameter = object._inputs[index]
-		elif name_parts.size() == 2 and object._outputs_array_property_preset.property_name_matches(name_parts[0]):
-			var index = object._outputs_array_property_preset.get_index_from_element_property_name(name_parts[0])
-			function_parameter = object._outputs[index]
-		if function_parameter != null:
-			if name_parts[1] == "identifier":
+		var array_property_preset = null
+		if object._inputs_array_property_preset.element_property_name_matches(name, true):
+			array_property_preset = object._inputs_array_property_preset
+		elif object._outputs_array_property_preset.element_property_name_matches(name, true):
+			array_property_preset = object._outputs_array_property_preset
+		if array_property_preset != null:
+			var index = array_property_preset.get_index_from_element_property_name(name, true)
+			var subproperty = array_property_preset.get_subproperty_from_element_property_name(name)
+			if subproperty == "identifier":
 				var editor_property := PropertyLineEdit.new(
 					object.changed,
-					func(): return function_parameter.generated_identifier,
-					func(): return function_parameter.identifier,
-					func(value): function_parameter.identifier = value,
+					array_property_preset.get_element_property_name(index, "generated_identifier")
 				)
 				add_property_editor(name, editor_property)
 				return true
-			if name_parts[1] == "display_name":
+			if subproperty == "display_name":
 				var editor_property := PropertyLineEdit.new(
 					object.changed,
-					func(): return function_parameter.generated_display_name,
-					func(): return function_parameter.display_name,
-					func(value): function_parameter.display_name = value,
+					array_property_preset.get_element_property_name(index, "generated_display_name")
 				)
 				add_property_editor(name, editor_property)
 				return true
 	if object is DataflowGraph:
-		var name_parts = name.split("/")
-		var node: DataflowGraph.DataflowNode = null
-		if name_parts.size() == 2 and object._nodes_array_property_preset.property_name_matches(name_parts[0]):
-			var index = object._nodes_array_property_preset.get_index_from_element_property_name(name_parts[0])
-			node = object._nodes[index]
-		if node != null:
-			if name_parts[1] == "identifier":
+		var array_property_preset = null
+		if object._nodes_array_property_preset.element_property_name_matches(name, true):
+			array_property_preset = object._nodes_array_property_preset
+		if array_property_preset != null:
+			var index = array_property_preset.get_index_from_element_property_name(name, true)
+			var subproperty = array_property_preset.get_subproperty_from_element_property_name(name)
+			if subproperty == "identifier":
 				var editor_property := PropertyLineEdit.new(
 					object.changed,
-					func(): return node.generated_identifier,
-					func(): return node.identifier,
-					func(value): node.identifier = value,
+					array_property_preset.get_element_property_name(index, "generated_identifier")
 				)
 				add_property_editor(name, editor_property)
 				return true
-			if name_parts[1] == "display_name":
+			if subproperty == "display_name":
 				var editor_property := PropertyLineEdit.new(
 					object.changed,
-					func(): return node.generated_display_name,
-					func(): return node.display_name,
-					func(value): node.display_name = value,
+					array_property_preset.get_element_property_name(index, "generated_display_name")
 				)
 				add_property_editor(name, editor_property)
 				return true
