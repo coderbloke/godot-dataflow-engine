@@ -255,7 +255,6 @@ static func generate_child_identifiers(children: Array, preset: ChildIdentifierP
 		# Otherwise everybody can keep it previous index
 		# We also remove duplicates
 		var already_used_id_indices = PackedInt64Array()  # Keep it sorted, to find first unused one
-		print(children_per_id_base)
 		for child in children_per_id_base[id_base]:
 			if child != triggering_child and id_index_per_child[child] == requested_id_index:
 				id_index_per_child[child] = -1
