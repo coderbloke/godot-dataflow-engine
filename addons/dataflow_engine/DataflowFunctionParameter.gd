@@ -11,8 +11,6 @@ var display_name: String = "":
 			_generated_display_name_and_identifier()
 			_disable_change_emit = false
 			changed.emit()
-	get:
-		return display_name
 
 var identifier: String = "":
 	set(new_value):
@@ -100,7 +98,7 @@ func _get_property_list() -> Array[Dictionary]:
 		"hint_string": ""
 	})
 	return properties
-
+	
 func _set(property: StringName, value: Variant):
 	match property:
 		"display_name":

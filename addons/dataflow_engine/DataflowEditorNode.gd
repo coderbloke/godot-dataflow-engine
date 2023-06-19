@@ -32,7 +32,8 @@ func _init(dataflow_node: DataflowGraph.DataflowNode):
 	dragged.connect(_on_editor_node_dragged)
 
 func _sync_with_dataflow_node():
-	title = dataflow_node.display_name
+	print("[_sync_with_dataflow_node] %s" % dataflow_node.display_name)
+	title = dataflow_node.get_display_name()
 	position_offset = dataflow_node.position
 	if dataflow_node.function != dataflow_function:
 		dataflow_function = dataflow_node.function

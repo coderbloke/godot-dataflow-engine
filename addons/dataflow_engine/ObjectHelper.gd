@@ -330,4 +330,15 @@ static func generate_child_identifiers(children: Array, preset: ChildIdentifierP
 				continue
 	
 	return new_id_per_child
-	
+
+static func get_single_property_info(property_name: String, type: Variant.Type,
+		usage: PropertyUsageFlags = PROPERTY_USAGE_DEFAULT, hint: PropertyHint = PROPERTY_HINT_NONE,
+		hint_string: String = "", property_class_name: String = "") -> Dictionary:
+	return {
+		"name": property_name,
+		"class_name": property_class_name,
+		"type": type,
+		"usage": usage,
+		"hint": hint,
+		"hint_string": hint_string
+	}
