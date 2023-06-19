@@ -4,6 +4,12 @@ extends GraphNode
 const left_connector_icon = preload("LeftConnector.svg")
 const right_connector_icon = preload("RightConnector.svg")
 
+var _slot_style_box := StyleBoxEmpty.new()
+
+var default_connector_color := Color.WHITE
+
+var _centered_title := TextLine.new()
+
 var dataflow_node: DataflowGraph.DataflowNode:
 	set(new_value):
 		if dataflow_node != null:
@@ -24,15 +30,41 @@ var dataflow_function: DataflowFunction:
 
 func _init(dataflow_node: DataflowGraph.DataflowNode):
 	self.dataflow_node = dataflow_node
-	custom_minimum_size = Vector2(120, 0)
-	var stylebox := StyleBoxEmpty.new()
-	stylebox.content_margin_left = 8
-	stylebox.content_margin_right = 8
-	add_theme_stylebox_override("slot", stylebox)
+#	custom_minimum_size = Vector2(120, 0)
 	dragged.connect(_on_editor_node_dragged)
 
+var _updating_theme := false
+
+func _notification(what):
+	match what:
+		NOTIFICATION_ENTER_TREE, \
+		NOTIFICATION_THEME_CHANGED:
+			if not _updating_theme:
+				_updating_theme = true
+				_slot_style_box = get_theme_stylebox("slot").duplicate()
+				_slot_style_box.content_margin_left = 8
+				_slot_style_box.content_margin_right = 8
+				add_theme_stylebox_override("slot", _slot_style_box)
+				_update_size()
+				default_connector_color = get_theme_color("font_color", "Editor")
+				_sync_with_dataflow_node() # because default slot color
+				_sync_with_dataflow_function() # Because title font and size
+				_updating_theme = false
+		NOTIFICATION_DRAW:
+			var title_pos := Vector2(size.x / 2 - _centered_title.get_size().x / 2,
+				get_theme_constant("title_offset") - _centered_title.get_size().y)
+			_centered_title.draw(get_canvas_item(), title_pos, get_theme_color("title_color"))
+
+func _update_size():
+	custom_minimum_size = Vector2(_slot_style_box.content_margin_left + _centered_title.get_size().x + _slot_style_box.content_margin_right, 0)
+	size = Vector2(0, 0)
+
 func _sync_with_dataflow_node():
-	title = dataflow_node.get_display_name()
+#	title = dataflow_node.get_display_name()
+	_centered_title.clear()
+	_centered_title.add_string(dataflow_node.get_display_name(), get_theme_font("title_font"), get_theme_font_size("title_font_size"))
+	_update_size()
+	queue_redraw()
 	position_offset = dataflow_node.diagram_position
 	if dataflow_node.function != dataflow_function:
 		dataflow_function = dataflow_node.function
@@ -71,7 +103,7 @@ func _sync_with_dataflow_function():
 			slot_container.add_child(_create_slot_label()) # right label
 			slot_containers[slot_index] = slot_container
 			add_child(slot_containers[slot_index])
-	var connector_color = Color("cdcfd2")
+	var connector_color = default_connector_color
 	for slot_index in slot_count:
 		var left_label = slot_containers[slot_index].get_child(0) as RichTextLabel
 		var right_label = slot_containers[slot_index].get_child(1) as RichTextLabel
