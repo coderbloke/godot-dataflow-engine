@@ -82,6 +82,28 @@ func _parse_property(object: Object, type: Variant.Type, name: String,
 			if subproperty == "generated_display_name":
 				# Do not include separate editor for this, as it is presented in display_name's editor
 				return true
+		if name == "default_naming/identifier":
+			var placeholder_property = "default_naming/generated_identifier"
+			var property_editor := PropertyLineEdit.new(
+				placeholder_property,
+				object.changed,
+			)
+			add_property_editor(name, property_editor)
+			return true
+#		if name == "default_naming/display_name":
+#			var placeholder_property = "default_naming/generated_display_name"
+#			var property_editor := PropertyLineEdit.new(
+#				placeholder_property,
+#				object.changed,
+#			)
+#			add_property_editor(name, property_editor)
+#			return true
+		if name == "default_naming/generated_identifier":
+			# Do not include separate editor for this, as it is presented in identifier's editor
+			return true
+#		if name == "default_naming/generated_display_name":
+#			# Do not include separate editor for this, as it is presented in display_name's editor
+#			return true
 	if object is DataflowGraph:
 		var array_property_preset = null
 		if object._nodes_array_property_preset.element_property_name_matches(name, true):

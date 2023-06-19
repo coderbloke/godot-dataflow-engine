@@ -37,16 +37,71 @@ var _output_identifier_preset := ObjectHelper.ChildIdentifierPreset.new("output"
 		func (child):
 			return child.get_identifier())
 
+var _disable_change_emit := false
+
 var default_display_name: String = "":
 	set(new_value):
 		if new_value != default_display_name:
 			default_display_name = new_value
+			_disable_change_emit = true
+			_generated_display_name_and_identifier()
+			_disable_change_emit = false
 			changed.emit()
+
 var default_identifier: String = "":
 	set(new_value):
 		if new_value != default_identifier:
 			default_identifier = new_value
+			_disable_change_emit = true
+			_generated_display_name_and_identifier()
+			_disable_change_emit = false
 			changed.emit()
+
+#var generated_default_display_name: String = "":
+#	set(new_value):
+#		if new_value != generated_default_display_name:
+#			generated_default_display_name = new_value
+#			if not _disable_change_emit:
+#				changed.emit()
+#	get:
+#		if generated_default_display_name != null and not generated_default_display_name.is_empty():
+#			return generated_default_display_name
+#		else:
+#			return _object_helper.generate_display_name(default_identifier) if default_identifier != null and not default_identifier.is_empty() else _object_helper.generate_display_name(generated_default_identifier)
+#
+var generated_default_identifier: String = "":
+	set(new_value):
+		if new_value != generated_default_identifier:
+			var previous_identifier = get_default_identifier()
+			generated_default_identifier = new_value
+			if not _disable_change_emit:
+				if default_identifier == null or default_identifier.is_empty(): # So generated identifer is used
+					identifier_changed.emit(self)
+				changed.emit()
+	get:
+		if generated_default_identifier != null and not generated_default_identifier.is_empty():
+			return generated_default_identifier
+		else:
+			return _object_helper.generate_identifier(default_display_name)
+
+func _generated_display_name_and_identifier():
+#	if default_display_name != null and not default_display_name.is_empty():
+#		generated_default_display_name = default_display_name
+#	else:
+#		generated_default_display_name = _object_helper.generate_display_name(default_identifier)
+	if default_identifier != null and not default_identifier.is_empty():
+		generated_default_identifier = default_identifier
+	else:
+		generated_default_identifier = _object_helper.generate_identifier(default_display_name)
+
+signal identifier_changed(parameter: DataflowFunction.DataflowFunctionParameter)
+
+func get_default_display_name():
+#	return default_display_name if not default_display_name.is_empty() else generated_default_display_name
+	return default_display_name
+
+func get_default_identifier():
+	return default_identifier if not default_identifier.is_empty() else generated_default_identifier
 
 func _init():
 	_object_helper.add_signal_to_connect("changed",
@@ -93,6 +148,8 @@ func _get_property_list() -> Array[Dictionary]:
 	properties.append_array(_object_helper.get_array_property_list(_outputs, _outputs_array_property_preset))
 	properties.append(_object_helper.get_single_property_info("default_naming/display_name", TYPE_STRING))
 	properties.append(_object_helper.get_single_property_info("default_naming/identifier", TYPE_STRING))
+#	properties.append(_object_helper.get_single_property_info("default_naming/generated_display_name", TYPE_STRING, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY))
+	properties.append(_object_helper.get_single_property_info("default_naming/generated_identifier", TYPE_STRING, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY))
 	return properties
 
 func _set(property: StringName, value: Variant):
@@ -104,6 +161,10 @@ func _set(property: StringName, value: Variant):
 		default_display_name = value
 	elif property == "default_naming/identifier":
 		default_identifier = value
+#	elif property == "default_naming/generated_display_name":
+#		generated_default_display_name = value
+	elif property == "default_naming/generated_identifier":
+		generated_default_identifier = value
 
 func _get(property: StringName) -> Variant:
 	if _object_helper.is_array_property(property, _inputs_array_property_preset):
@@ -114,6 +175,10 @@ func _get(property: StringName) -> Variant:
 		return default_display_name
 	elif property == "default_naming/identifier":
 		return default_identifier
+#	elif property == "default_naming/generated_display_name":
+#		return generated_default_display_name
+	elif property == "default_naming/generated_identifier":
+		return generated_default_identifier
 	return null
 
 func _emit_property_list_changed():
