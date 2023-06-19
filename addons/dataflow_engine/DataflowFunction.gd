@@ -21,15 +21,15 @@ var _inputs_array_property_preset := ObjectHelper.ArrayPropertyPreset.new("input
 			return DataflowFunctionParameter.new(),
 		func (): 
 			_update_input_parameter_identifiers(null)
-			changed.emit() 
-			property_list_changed.emit())
+			property_list_changed.emit()
+			changed.emit())
 var _outputs_array_property_preset := ObjectHelper.ArrayPropertyPreset.new("output",
 		func (): 
 			return DataflowFunctionParameter.new(),
 		func (): 
 			_update_output_parameter_identifiers(null)
-			changed.emit()
-			property_list_changed.emit())
+			property_list_changed.emit()
+			changed.emit())
 var _input_identifier_preset := ObjectHelper.ChildIdentifierPreset.new("input",
 		func (child): 
 			return child.get_identifier())
@@ -44,7 +44,7 @@ var default_display_name: String = "":
 		if new_value != default_display_name:
 			default_display_name = new_value
 			_disable_change_emit = true
-			_generated_display_name_and_identifier()
+			_generate_display_name_and_identifier()
 			_disable_change_emit = false
 			changed.emit()
 
@@ -53,7 +53,7 @@ var default_identifier: String = "":
 		if new_value != default_identifier:
 			default_identifier = new_value
 			_disable_change_emit = true
-			_generated_display_name_and_identifier()
+			_generate_display_name_and_identifier()
 			_disable_change_emit = false
 			changed.emit()
 
@@ -72,11 +72,10 @@ var default_identifier: String = "":
 var generated_default_identifier: String = "":
 	set(new_value):
 		if new_value != generated_default_identifier:
-			var previous_identifier = get_default_identifier()
 			generated_default_identifier = new_value
+			if default_identifier == null or default_identifier.is_empty(): # So generated identifer is used
+				default_identifier_changed.emit(self)
 			if not _disable_change_emit:
-				if default_identifier == null or default_identifier.is_empty(): # So generated identifer is used
-					identifier_changed.emit(self)
 				changed.emit()
 	get:
 		if generated_default_identifier != null and not generated_default_identifier.is_empty():
@@ -84,7 +83,7 @@ var generated_default_identifier: String = "":
 		else:
 			return _object_helper.generate_identifier(default_display_name)
 
-func _generated_display_name_and_identifier():
+func _generate_display_name_and_identifier():
 #	if default_display_name != null and not default_display_name.is_empty():
 #		generated_default_display_name = default_display_name
 #	else:
@@ -94,7 +93,7 @@ func _generated_display_name_and_identifier():
 	else:
 		generated_default_identifier = _object_helper.generate_identifier(default_display_name)
 
-signal identifier_changed(parameter: DataflowFunction.DataflowFunctionParameter)
+signal default_identifier_changed(parameter: DataflowFunction.DataflowFunctionParameter)
 
 func get_default_display_name():
 #	return default_display_name if not default_display_name.is_empty() else generated_default_display_name
@@ -112,7 +111,8 @@ func _init():
 		func (parameter: DataflowFunctionParameter):
 			if not _updating_children:
 				_update_parameter_identifiers(parameter)
-				changed.emit())
+				changed.emit(),
+		DataflowFunctionParameter)
 	_object_helper.add_signal_to_connect("property_list_changed",
 		func (): 
 			property_list_changed.emit())

@@ -8,7 +8,7 @@ var display_name: String = "":
 		if new_value != display_name:
 			display_name = new_value
 			_disable_change_emit = true
-			_generated_display_name_and_identifier()
+			_generate_display_name_and_identifier()
 			_disable_change_emit = false
 			changed.emit()
 
@@ -17,7 +17,7 @@ var identifier: String = "":
 		if new_value != identifier:
 			identifier = new_value
 			_disable_change_emit = true
-			_generated_display_name_and_identifier()
+			_generate_display_name_and_identifier()
 			_disable_change_emit = false
 			identifier_changed.emit(self)
 			changed.emit()
@@ -37,11 +37,10 @@ var generated_display_name: String = "":
 var generated_identifier: String = "":
 	set(new_value):
 		if new_value != generated_identifier:
-			var previous_identifier = get_identifier()
 			generated_identifier = new_value
+			if identifier == null or identifier.is_empty(): # So generated identifer is used
+				identifier_changed.emit(self)
 			if not _disable_change_emit:
-				if identifier == null or identifier.is_empty(): # So generated identifer is used
-					identifier_changed.emit(self)
 				changed.emit()
 	get:
 		if generated_identifier != null and not generated_identifier.is_empty():
@@ -49,7 +48,7 @@ var generated_identifier: String = "":
 		else:
 			return _object_helper.generate_identifier(display_name)
 
-func _generated_display_name_and_identifier():
+func _generate_display_name_and_identifier():
 	if display_name != null and not display_name.is_empty():
 		generated_display_name = display_name
 	else:
