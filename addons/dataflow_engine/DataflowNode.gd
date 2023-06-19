@@ -75,16 +75,10 @@ var function: DataflowFunction:
 			function = _object_helper.update_child_connection(function, new_value)
 			changed.emit()
 			
-#var title: String:
-#	set(new_value):
-#		if new_value != title:
-#			title = new_value
-#			changed.emit()
-
-var position: Vector2:
+var diagram_position: Vector2:
 	set(new_value):
-		if new_value != position:
-			position = new_value
+		if new_value != diagram_position:
+			diagram_position = new_value
 			changed.emit()
 
 signal changed()
@@ -137,7 +131,7 @@ func _set(property: StringName, value: Variant):
 		"function":
 			function = value
 		"diagram/position":
-			position = value
+			diagram_position = value
 
 func _get(property: StringName) -> Variant:
 	match property:
@@ -148,6 +142,6 @@ func _get(property: StringName) -> Variant:
 		"function":
 			return function
 		"diagram/position":
-			return position
+			return diagram_position
 	return null
 	

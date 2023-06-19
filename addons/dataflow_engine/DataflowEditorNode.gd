@@ -32,9 +32,8 @@ func _init(dataflow_node: DataflowGraph.DataflowNode):
 	dragged.connect(_on_editor_node_dragged)
 
 func _sync_with_dataflow_node():
-	print("[_sync_with_dataflow_node] %s" % dataflow_node.display_name)
 	title = dataflow_node.get_display_name()
-	position_offset = dataflow_node.position
+	position_offset = dataflow_node.diagram_position
 	if dataflow_node.function != dataflow_function:
 		dataflow_function = dataflow_node.function
 
@@ -54,8 +53,8 @@ func _create_slot_label() -> RichTextLabel:
 	return label
 
 func _sync_with_dataflow_function():
-	var inputs := dataflow_function.get_inputs()
-	var outputs := dataflow_function.get_outputs()
+	var inputs = dataflow_function.get_inputs() if dataflow_function != null else []
+	var outputs = dataflow_function.get_outputs() if dataflow_function != null else []
 	var previous_slot_count := slot_containers.size()
 	var slot_count := max(inputs.size(), outputs.size(), 1)
 	for previous_slot_index in slot_containers.size():
@@ -93,5 +92,5 @@ func _sync_with_dataflow_function():
 				else " "
 
 func _on_editor_node_dragged(from: Vector2, to: Vector2):
-	dataflow_node.position = to
+	dataflow_node.diagram_position = to
 
