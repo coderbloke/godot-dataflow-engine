@@ -1,3 +1,4 @@
+@icon("DataflowFunction.svg")
 @tool
 class_name DataflowFunction extends Resource
 
