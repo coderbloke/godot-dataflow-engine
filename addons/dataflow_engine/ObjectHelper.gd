@@ -167,7 +167,6 @@ func set_array_property(property: StringName, value: Variant, array: Array, pres
 		if value != array.size():
 			var  previous_size := array.size()
 			array.resize(value)
-			print("array resized: %s" % array.size())
 			for i in array.size():
 				if i >= previous_size:
 					array[i] = create_and_connect_if_necessary(array[i], preset.element_create_function)
@@ -226,6 +225,7 @@ static func generate_child_identifiers(children: Array, preset: ChildIdentifierP
 	var children_per_id_base = { } # String -> Object
 	var id_base_per_child = { } # Object -> String
 	var id_index_per_child = { } # Object -> int
+	var children_without_id = [ ]
 
 	var requested_id_base := ""
 	var requested_id_index := -1
@@ -241,6 +241,7 @@ static func generate_child_identifiers(children: Array, preset: ChildIdentifierP
 			continue
 		var child_id_base := preset.getter.call(child)
 		if child_id_base == null or child_id_base.is_empty():
+			children_without_id.append(child)
 			child_id_base = preset.default_identifier_base
 		var child_id_index := -1
 		var last_underscore = child_id_base.rfind("_")
@@ -296,8 +297,8 @@ static func generate_child_identifiers(children: Array, preset: ChildIdentifierP
 #			log.print("[generate_child_identifiers] child = %s, index = %s" % [child, id_index_per_child[child]]) # DEBUG
 			# No index needed, if there is only one child in the group
 			if children_per_id_base[id_base].size() < 2:
-				# Needs change, if previously it had index
-				if id_index_per_child[child] >= index_base:
+				# Needs change, if previously it had index or did not had any id at all 
+				if id_index_per_child[child] >= index_base or child in children_without_id:
 					new_id_per_child[child] = id_base
 #				log.print("[generate_child_identifiers] no need for index -> new_id_per_child = %s" % [new_id_per_child]) # DEBUG
 				continue
