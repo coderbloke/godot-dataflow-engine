@@ -10,7 +10,7 @@ var display_name: String = "":
 		if new_value != display_name:
 			display_name = new_value
 			_disable_change_emit = true
-			generated_identifier = _object_helper.generate_identifier(display_name)
+			_generated_display_name_and_identifier()
 			_disable_change_emit = false
 			changed.emit()
 
@@ -19,10 +19,10 @@ var identifier: String = "":
 		if new_value != identifier:
 			identifier = new_value
 			_disable_change_emit = true
-			generated_display_name = _object_helper.generate_display_name(identifier)
+			_generated_display_name_and_identifier()
 			_disable_change_emit = false
+			identifier_changed.emit(self)
 			changed.emit()
-			identifier_changed.emit()
 
 var generated_display_name: String = "":
 	set(new_value):
@@ -34,21 +34,34 @@ var generated_display_name: String = "":
 		if generated_display_name != null and not generated_display_name.is_empty():
 			return generated_display_name
 		else:
-			return _object_helper.generate_display_name(identifier)
+			return _object_helper.generate_display_name(identifier) if identifier != null and not identifier.is_empty() else _object_helper.generate_display_name(generated_identifier)
 
 var generated_identifier: String = "":
 	set(new_value):
 		if new_value != generated_identifier:
+			var previous_identifier = get_identifier()
+			generated_identifier = new_value
 			if not _disable_change_emit:
+				if identifier == null or identifier.is_empty(): # So generated identifer is used
+					identifier_changed.emit(self)
 				changed.emit()
-				identifier_changed.emit()
 	get:
 		if generated_identifier != null and not generated_identifier.is_empty():
 			return generated_identifier
 		else:
 			return _object_helper.generate_identifier(display_name)
 
-signal identifier_changed()
+func _generated_display_name_and_identifier():
+	if display_name != null and not display_name.is_empty():
+		generated_display_name = display_name
+	else:
+		generated_display_name = _object_helper.generate_display_name(identifier)
+	if identifier != null and not identifier.is_empty():
+		generated_identifier = identifier
+	else:
+		generated_identifier = _object_helper.generate_identifier(display_name)
+
+signal identifier_changed(parameter: DataflowGraph.DataflowNode)
 
 func get_display_name():
 	return display_name if not display_name.is_empty() else generated_display_name

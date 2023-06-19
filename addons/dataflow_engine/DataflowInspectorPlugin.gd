@@ -9,8 +9,10 @@ class PropertyLineEdit extends EditorProperty:
 	var _line_edit: LineEdit
 	var _updating := false
 	
+	# If there is no update trigger (e.g. from Resource's updated signal, the placeholder won't be updated.
+	# Tried to do with multiple property editor, but didn't work
+	# Other advantage: Editor will update more fluently on update (otherwise inspector updates it only on next _update)
 	func _init(placeholder_property: String, update_trigger: Signal = Signal()):
-		update_trigger = Signal()
 		self._update_trigger = update_trigger
 		self._placeholder_property = placeholder_property
 		_line_edit = LineEdit.new()
@@ -44,7 +46,7 @@ class PropertyLineEdit extends EditorProperty:
 		_updating = false
 
 func _can_handle(object: Object):
-	return object is DataflowFunction or object is DataflowGraph
+	return object is DataflowFunction or object is DataflowGraph or object is DataflowGraph.DataflowNode
 
 func _parse_property(object: Object, type: Variant.Type, name: String,
 		hint_type: PropertyHint, hint_string: String,
@@ -109,5 +111,28 @@ func _parse_property(object: Object, type: Variant.Type, name: String,
 			if subproperty == "generated_display_name":
 				# Do not include separate editor for this, as it is presented in display_name's editor
 				return true
+	if object is DataflowGraph.DataflowNode:
+		if name == "identifier":
+			var placeholder_property = "generated_identifier"
+			var property_editor := PropertyLineEdit.new(
+				placeholder_property,
+				object.changed,
+			)
+			add_property_editor(name, property_editor)
+			return true
+		if name == "display_name":
+			var placeholder_property = "generated_display_name"
+			var property_editor := PropertyLineEdit.new(
+				placeholder_property,
+				object.changed,
+			)
+			add_property_editor(name, property_editor)
+			return true
+		if name == "generated_identifier":
+			# Do not include separate editor for this, as it is presented in identifier's editor
+			return true
+		if name == "generated_display_name":
+			# Do not include separate editor for this, as it is presented in display_name's editor
+			return true
 	return false
 

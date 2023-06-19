@@ -36,6 +36,17 @@ var _output_identifier_preset := ObjectHelper.ChildIdentifierPreset.new("output"
 		func (child):
 			return child.get_identifier())
 
+var default_display_name: String = "":
+	set(new_value):
+		if new_value != default_display_name:
+			default_display_name = new_value
+			changed.emit()
+var default_identifier: String = "":
+	set(new_value):
+		if new_value != default_identifier:
+			default_identifier = new_value
+			changed.emit()
+
 func _init():
 	_object_helper.add_signal_to_connect("changed",
 		func (): 
@@ -75,14 +86,12 @@ func _set_new_parameter_identifiers(new_id_per_child: Dictionary):
 			child.identifier = new_id_per_child[child]
 	_updating_children = false
 
-func _on_input_array_changed():
-	changed.emit();
-	property_list_changed.emit()
-
 func _get_property_list() -> Array[Dictionary]:
 	var properties: Array[Dictionary] = []
 	properties.append_array(_object_helper.get_array_property_list(_inputs, _inputs_array_property_preset))
 	properties.append_array(_object_helper.get_array_property_list(_outputs, _outputs_array_property_preset))
+	properties.append(_object_helper.get_single_property_info("default_naming/display_name", TYPE_STRING))
+	properties.append(_object_helper.get_single_property_info("default_naming/identifier", TYPE_STRING))
 	return properties
 
 func _set(property: StringName, value: Variant):
@@ -90,12 +99,20 @@ func _set(property: StringName, value: Variant):
 		_object_helper.set_array_property(property, value, _inputs, _inputs_array_property_preset)
 	elif _object_helper.is_array_property(property, _outputs_array_property_preset):
 		_object_helper.set_array_property(property, value, _outputs, _outputs_array_property_preset)
+	elif property == "default_naming/display_name":
+		default_display_name = value
+	elif property == "default_naming/identifier":
+		default_identifier = value
 
 func _get(property: StringName) -> Variant:
 	if _object_helper.is_array_property(property, _inputs_array_property_preset):
 		return _object_helper.get_array_property(property, _inputs, _inputs_array_property_preset)
 	elif _object_helper.is_array_property(property, _outputs_array_property_preset):
 		return _object_helper.get_array_property(property, _outputs, _outputs_array_property_preset)
+	elif property == "default_naming/display_name":
+		return default_display_name
+	elif property == "default_naming/identifier":
+		return default_identifier
 	return null
 
 func _emit_property_list_changed():
