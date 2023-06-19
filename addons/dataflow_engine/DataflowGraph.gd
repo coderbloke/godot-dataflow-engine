@@ -13,8 +13,11 @@ var _nodes: Array[DataflowNode] = []:
 var _object_helper := ObjectHelper.new()
 
 var _nodes_array_property_preset := ObjectHelper.ArrayPropertyPreset.new("node",
-		func (): return DataflowNode.new(),
-		func (): property_list_changed.emit())
+		func ():
+			return DataflowNode.new(),
+		func ():
+			property_list_changed.emit()
+			changed.emit())
 var _node_identifier_preset := ObjectHelper.ChildIdentifierPreset.new("node",
 		func (child): 
 			return child.get_identifier())

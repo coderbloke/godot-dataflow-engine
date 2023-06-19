@@ -167,6 +167,7 @@ func set_array_property(property: StringName, value: Variant, array: Array, pres
 		if value != array.size():
 			var  previous_size := array.size()
 			array.resize(value)
+			print("array resized: %s" % array.size())
 			for i in array.size():
 				if i >= previous_size:
 					array[i] = create_and_connect_if_necessary(array[i], preset.element_create_function)
@@ -174,6 +175,8 @@ func set_array_property(property: StringName, value: Variant, array: Array, pres
 	elif property.begins_with(preset.get_element_property_name_prefix()):
 		var slash_pos = property.find("/")
 		var i := preset.get_index_from_element_property_name(property.substr(0, slash_pos))
+		if i < 0 or i >= array.size():
+			return
 		array[i] = create_and_connect_if_necessary(array[i], preset.element_create_function)
 		array[i].set(property.substr(slash_pos + 1), value)
 
@@ -183,6 +186,8 @@ func get_array_property(property: StringName, array: Array, preset: ArrayPropert
 	elif property.begins_with(preset.get_element_property_name_prefix()):
 		var slash_pos = property.find("/")
 		var i := preset.get_index_from_element_property_name(property.substr(0, slash_pos))
+		if i < 0 or i >= array.size():
+			return null
 		array[i] = create_and_connect_if_necessary(array[i], preset.element_create_function)
 		return array[i].get(property.substr(slash_pos + 1))
 	return null

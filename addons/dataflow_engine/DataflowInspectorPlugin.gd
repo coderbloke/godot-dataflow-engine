@@ -33,7 +33,7 @@ class PropertyLineEdit extends EditorProperty:
 	func update_line_edit():
 		var placeholder_text = get_edited_object().get(_placeholder_property)
 		if placeholder_text != _line_edit.placeholder_text:
-			_line_edit.placeholder_text = placeholder_text
+			_line_edit.placeholder_text = placeholder_text if placeholder_text else ""
 		var caret = _line_edit.caret_column
 		var text = get_edited_object().get(get_edited_property())
 		if text != _line_edit.text:
